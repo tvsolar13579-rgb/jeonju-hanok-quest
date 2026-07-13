@@ -27,6 +27,13 @@ export function useUploadSubmission(regionSlug: RegionSlug) {
 
   return useMutation({
     mutationFn: async ({ questId, file }: { questId: number; file: File }) => {
+      // 사진 다시 찍기: 같은 퀘스트에 이미 제출한 기록이 있으면 먼저 삭제하고 새로 등록합니다.
+      await supabase
+        .from('submissions')
+        .delete()
+        .eq('device_id', deviceId)
+        .eq('quest_id', questId)
+
       const ext = file.name.split('.').pop()
       const path = `${deviceId}/${regionSlug}/quest-${questId}-${Date.now()}.${ext}`
 
