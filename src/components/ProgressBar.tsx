@@ -11,16 +11,16 @@ export default function ProgressBar({ completed, total, required }: ProgressBarP
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-sm font-semibold text-hanok-ink">
+        <span className="text-sm font-semibold text-foreground">
           진행률 {completed} / {total}
         </span>
-        <span className={`text-xs font-bold ${reached ? 'text-hanok-terracotta' : 'text-hanok-tile'}`}>
+        <span className={`text-xs font-bold ${reached ? 'text-accent' : 'text-muted-foreground'}`}>
           {reached ? '상품권 지급 대상!' : `${required}개 달성 시 상품권 지급`}
         </span>
       </div>
-      <div className="w-full h-3 bg-white rounded-full overflow-hidden border border-hanok-tile/30">
+      <div className="w-full h-3 bg-muted rounded-full overflow-hidden border border-border">
         <div
-          className="h-full bg-hanok-terracotta transition-all duration-500"
+          className="h-full bg-primary transition-all duration-500"
           style={{ width: `${percent}%` }}
         />
       </div>
