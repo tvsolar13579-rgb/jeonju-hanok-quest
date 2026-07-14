@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Camera, Check, Loader2, RotateCcw } from 'lucide-react'
 import { Quest } from '../types'
 
 interface QuestCardProps {
   quest: Quest
   completed: boolean
+  photoUrl?: string
   uploading: boolean
   onUpload: (file: File) => void
 }
@@ -12,41 +13,15 @@ interface QuestCardProps {
 export default function QuestCard({
   quest,
   completed,
+  photoUrl,
   uploading,
   onUpload,
 }: QuestCardProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [photoUrl, setPhotoUrl] = useState<string>()
-
-  const storageKey = `quest-photo-${quest.id}`
-
-  useEffect(() => {
-    const saved = localStorage.getItem(storageKey)
-    if (saved) {
-      setPhotoUrl(saved)
-    }
-  }, [storageKey])
-
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-
-  const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-
     if (!file) return
-
-    const base64 = await fileToBase64(file)
-
-    localStorage.setItem(storageKey, base64)
-    setPhotoUrl(base64)
 
     onUpload(file)
 
@@ -58,7 +33,7 @@ export default function QuestCard({
       <div className="relative shrink-0">
         {completed && photoUrl ? (
           <img
-            src={photoUrl}
+            src={photoUrl || "/placeholder.svg"}
             alt={quest.title}
             className="w-12 h-12 rounded-full object-cover border-2 border-primary"
           />
