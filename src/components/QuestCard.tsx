@@ -81,8 +81,7 @@ export default function QuestCard({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/*" // capture="environment" 제거하여 모바일 호환성 확보
         className="hidden"
         onChange={handleFileChange}
       />
