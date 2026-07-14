@@ -1,21 +1,55 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Camera, Check, Loader2, RotateCcw } from 'lucide-react'
 import { Quest } from '../types'
 
 interface QuestCardProps {
   quest: Quest
   completed: boolean
-  photoUrl?: string
   uploading: boolean
   onUpload: (file: File) => void
 }
 
-export default function QuestCard({ quest, completed, photoUrl, uploading, onUpload }: QuestCardProps) {
+export default function QuestCard({
+  quest,
+  completed,
+  uploading,
+  onUpload,
+}: QuestCardProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [photoUrl, setPhotoUrl] = useState<string>()
+
+  const storageKey = `quest-photo-${quest.id}`
+
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey)
+    if (saved) {
+      setPhotoUrl(saved)
+    }
+  }, [storageKey])
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0]
-    if (file) onUpload(file)
+
+    if (!file) return
+
+    const base64 = await fileToBase64(file)
+
+    localStorage.setItem(storageKey, base64)
+    setPhotoUrl(base64)
+
+    onUpload(file)
+
     e.target.value = ''
   }
 
@@ -31,24 +65,37 @@ export default function QuestCard({ quest, completed, photoUrl, uploading, onUpl
         ) : (
           <div
             className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
-              completed ? 'bg-primary/15 text-primary border-2 border-primary' : 'bg-muted text-muted-foreground'
+              completed
+                ? 'bg-primary/15 text-primary border-2 border-primary'
+                : 'bg-muted text-muted-foreground'
             }`}
           >
             {quest.order}
           </div>
         )}
+
         {completed && (
           <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center border-2 border-card">
-            <Check size={11} className="text-primary-foreground" strokeWidth={3} />
+            <Check
+              size={11}
+              className="text-primary-foreground"
+              strokeWidth={3}
+            />
           </span>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-bold leading-snug ${completed ? 'text-primary' : 'text-card-foreground'}`}>
+        <p
+          className={`text-sm font-bold leading-snug ${
+            completed ? 'text-primary' : 'text-card-foreground'
+          }`}
+        >
           {quest.title}
         </p>
-        <p className="text-xs text-muted-foreground leading-snug mt-0.5">{quest.description}</p>
+        <p className="text-xs text-muted-foreground leading-snug mt-0.5">
+          {quest.description}
+        </p>
       </div>
 
       <input
@@ -66,9 +113,10 @@ export default function QuestCard({ quest, completed, photoUrl, uploading, onUpl
           disabled={uploading}
           onClick={() => inputRef.current?.click()}
           className={`flex items-center justify-center w-9 h-9 rounded-full ${
-            completed ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
+            completed
+              ? 'bg-primary/15 text-primary'
+              : 'bg-muted text-muted-foreground'
           } active:scale-95 transition-transform disabled:opacity-50`}
-          aria-label={completed ? '사진 다시 찍기' : '사진 첨부'}
         >
           {uploading ? (
             <Loader2 size={16} className="animate-spin" />
@@ -78,8 +126,11 @@ export default function QuestCard({ quest, completed, photoUrl, uploading, onUpl
             <Camera size={16} />
           )}
         </button>
+
         {completed && !uploading && (
-          <span className="text-[9px] text-muted-foreground leading-none">다시찍기</span>
+          <span className="text-[9px] text-muted-foreground">
+            다시찍기
+          </span>
         )}
       </div>
     </div>
